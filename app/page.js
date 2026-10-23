@@ -1,6 +1,6 @@
  "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const WHATSAPP = "917071944000";
 
@@ -32,11 +32,11 @@ const products = [
       "A clean utility cargo with a practical pocket layout and North Stag detailing.",
     colors: ["Black", "Green", "Grey", "Brown", "Beige", "Light Grey"],
     images: [
-      "/images/Cargo/basic/1.png",
-      "/images/Cargo/basic/2.png",
-      "/images/Cargo/basic/3.png",
-      "/images/Cargo/basic/4.png",
-      "/images/Cargo/basic/5.png",
+      "/images/Cargo/Basic/1.png",
+      "/images/Cargo/Basic/2.png",
+      "/images/Cargo/Basic/3.png",
+      "/images/Cargo/Basic/4.png",
+      "/images/Cargo/Basic/5.png",
     ],
   },
   {
@@ -114,6 +114,7 @@ export default function Home() {
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const visibleProducts = useMemo(
     () =>
@@ -130,6 +131,40 @@ export default function Home() {
     setColor(product.colors[0]);
     setQuantity(1);
   }
+  useEffect(() => {
+  if (!selected && !lightboxOpen) return;
+
+  function handleKeyDown(event) {
+    if (event.key === "Escape") {
+      if (lightboxOpen) {
+        setLightboxOpen(false);
+      } else {
+        setSelected(null);
+      }
+    }
+
+    if (lightboxOpen && selected && selected.images.length > 1) {
+      if (event.key === "ArrowRight") {
+        setActiveImage((current) =>
+          (current + 1) % selected.images.length
+        );
+      }
+
+      if (event.key === "ArrowLeft") {
+        setActiveImage((current) =>
+          (current - 1 + selected.images.length) %
+          selected.images.length
+        );
+      }
+    }
+  }
+
+  document.addEventListener("keydown", handleKeyDown);
+
+  return () => {
+    document.removeEventListener("keydown", handleKeyDown);
+  };
+}, [selected, lightboxOpen]);
 
   return (
     <main>
@@ -137,7 +172,7 @@ export default function Home() {
         <a className="brand" href="#top" aria-label="North Stag home">
           <div className="logo-slot">
             <img
-              src=" /images/2.PNG"
+              src=" /images/2.png"
               alt="North Stag"
               onError={(e) => {
                 e.currentTarget.style.display = "none";
@@ -372,20 +407,18 @@ export default function Home() {
             </button>
 
             <div className="modal-gallery">
-              <div className="modal-image">
-                <img
-                  src={selected.images[activeImage]}
-                  alt={`${selected.name} — view ${activeImage + 1}`}
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    e.currentTarget.parentElement.classList.add("gallery-image-missing");
-                  }}
-                  onLoad={(e) => {
-                    e.currentTarget.style.display = "block";
-                    e.currentTarget.parentElement.classList.remove("gallery-image-missing");
-                  }}
-                />
-              </div>
+              <button
+  type="button"
+  className="modal-image"
+  onClick={() => setLightboxOpen(true)}
+  aria-label={`View ${selected.name} image full size`}
+>
+  <img
+    src={selected.images[activeImage]}
+    alt={`${selected.name} — view ${activeImage + 1}`}
+  />
+  <span className="zoom-hint">TAP TO ENLARGE ↗</span>
+</button>
 
               <button
                 className="gallery-arrow gallery-prev"
@@ -483,6 +516,68 @@ export default function Home() {
           </div>
         </div>
       )}
+      {selected && lightboxOpen && (
+  <div
+    className="lightbox"
+    onClick={() => setLightboxOpen(false)}
+    role="dialog"
+    aria-modal="true"
+    aria-label={`${selected.name} full-size image`}
+  >
+    <button
+      type="button"
+      className="lightbox-close"
+      onClick={() => setLightboxOpen(false)}
+      aria-label="Close full-size image"
+    >
+      ×
+    </button>
+
+    {selected.images.length > 1 && (
+      <>
+        <button
+          type="button"
+          className="lightbox-arrow lightbox-prev"
+          aria-label="Previous image"
+          onClick={(e) => {
+            e.stopPropagation();
+            setActiveImage(
+              (activeImage - 1 + selected.images.length) %
+                selected.images.length
+            );
+          }}
+        >
+          ←
+        </button>
+
+        <button
+          type="button"
+          className="lightbox-arrow lightbox-next"
+          aria-label="Next image"
+          onClick={(e) => {
+            e.stopPropagation();
+            setActiveImage(
+              (activeImage + 1) % selected.images.length
+            );
+          }}
+        >
+          →
+        </button>
+      </>
+    )}
+
+    <img
+      className="lightbox-image"
+      src={selected.images[activeImage]}
+      alt={`${selected.name} — full-size view ${activeImage + 1}`}
+      onClick={(e) => e.stopPropagation()}
+    />
+
+    <p className="lightbox-counter">
+      {activeImage + 1} / {selected.images.length}
+    </p>
+  </div>
+)}
     </main>
   );
 }
