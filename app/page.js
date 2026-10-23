@@ -62,9 +62,9 @@ const products = [
       "A wider statement silhouette with the North Stag finish.",
     colors: ["Light Grey", "Beige", "Light Brown", "Coffee", "Brown", "Grey", "Cream"],
     images: [
-      "/images/Trousers/BellBottom/1.png",
-      "/images/Trousers/BellBottom/2.png",
-      "/images/Trousers/BellBottom/3.png",
+      "/images/Trousers/Bellbottom/1.png",
+      "/images/Trousers/Bellbottom/2.png",
+      "/images/Trousers/Bellbottom/3.png",
     ],
   },
   {
